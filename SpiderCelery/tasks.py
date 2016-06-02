@@ -1,24 +1,8 @@
-__author__ = 'zhangxa'
+from __future__ import absolute_import,unicode_literals
 
-from celery import Celery
-from selenium import webdriver
+from SpiderCelery.celery import app
 from bs4 import BeautifulSoup
-
-import time
-
-app = Celery('tasks',broker='amqp://')
-
-app.conf.CELERY_RESULT_BACKEND =  'amqp://'
-
-
-@app.task
-def add(x,y):
-    return x + y
-
-@app.task
-def sleep(seconds):
-    time.sleep(float(seconds))
-    return seconds
+from selenium import webdriver
 
 @app.task
 def fetch_a_url(url):
@@ -41,6 +25,3 @@ def fetch_a_url(url):
         return url_lists
     except Exception as e:
         print("fetch error",e)
-
-if __name__ == "__main__":
-    app.start()
