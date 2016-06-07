@@ -10,12 +10,12 @@ import tcelery
 
 tcelery.setup_nonblocking_producer()
 
-base_url = 'http://www.hao123.com'
-concurrency = 20
+base_url = 'http://www.jianshu.com'
+concurrency = 5
 
 @gen.coroutine
 def main():
-    yield gen.sleep(1)
+    yield gen.sleep(3)
 
     q = queues.Queue()
     fetching,fetched = set(),set()
@@ -31,7 +31,10 @@ def main():
             fetching.add(cur_url)
             urls = yield gen.Task(tasks.fetch_a_url.apply_async,args=[cur_url])
             fetched.add(cur_url)
-            for url in urls.result:
+            url_lists = urls.result
+            if not url_lists:
+                return
+            for url in url_lists:
                 yield q.put(url)
         finally:
             q.task_done()

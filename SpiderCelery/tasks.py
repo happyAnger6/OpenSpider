@@ -18,7 +18,7 @@ def fetch_a_url(url):
             for attr in attrs:
                 if attr in ('href','src','#src','#src2'): #find a url,some url likes javascript:void(null) are not filter
                     url = url_path = a_tag[attr]
-                    if url_path.startswith("//"):
+                    if url_path.startswith("/"):
                         url_path = "http:"+url_path
                     if url_path.startswith("http:"):
                         url_lists.append(url_path)
