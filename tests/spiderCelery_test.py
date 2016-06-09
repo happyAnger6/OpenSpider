@@ -1,7 +1,7 @@
 __author__ = 'zhangxa'
 
-from SpiderCelery.celery import app
-from SpiderCelery.tasks import fetch_a_url
+from OpenSpider.SpiderCelery.celery import app
+from OpenSpider.SpiderCelery.tasks import fetch_a_url
 
 import tcelery
 

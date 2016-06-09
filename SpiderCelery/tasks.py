@@ -1,6 +1,7 @@
 from __future__ import absolute_import,unicode_literals
 
-from SpiderCelery.celery import app
+from OpenSpider.SpiderCelery.celery import app
+from OpenSpider.crawler import Crawler_Jianshu
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
@@ -25,3 +26,12 @@ def fetch_a_url(url):
         return url_lists
     except Exception as e:
         print("fetch error",e)
+
+@app.task
+def jianshu_crawler(url):
+    try:
+        crawler = Crawler_Jianshu(url)
+        crawler.grab()
+        return crawler.url_lists
+    except Exception as e:
+        print("jianshu_crawler exception",e)

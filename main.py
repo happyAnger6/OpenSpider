@@ -1,7 +1,7 @@
 __author__ = 'zhangxa'
 
-from SpiderCelery.celery import app
-from SpiderCelery import tasks
+from OpenSpider.SpiderCelery.celery import app
+from OpenSpider.SpiderCelery import tasks
 from tornado.ioloop import IOLoop
 from tornado import gen,queues
 
@@ -29,7 +29,7 @@ def main():
 
             print("fetching url:%s" % cur_url)
             fetching.add(cur_url)
-            urls = yield gen.Task(tasks.fetch_a_url.apply_async,args=[cur_url])
+            urls = yield gen.Task(tasks.jianshu_crawler.apply_async,args=[cur_url])
             fetched.add(cur_url)
             url_lists = urls.result
             if not url_lists:

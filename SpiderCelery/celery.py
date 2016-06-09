@@ -4,7 +4,7 @@ from celery import Celery
 
 app = Celery('SpiderCelery',
              broker='amqp://',
-             include='SpiderCelery.tasks')
+             include='OpenSpider.SpiderCelery.tasks')
 
 app.conf.CELERY_RESULT_BACKEND =  'amqp://'
 
