@@ -5,15 +5,17 @@ from OpenSpider.crawler import Crawler_Jianshu
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
+PHANTOMJS_PATH='/usr/bin/phantomjs'
+
 @app.task
 def fetch_a_url(url):
     try:
-        driver = webdriver.PhantomJS(executable_path="/usr/bin/phantomjs")
+        driver = webdriver.PhantomJS(executable_path=PHANTOMJS_PATH)
         driver.get(url)
         pagesource = driver.page_source
         bs = BeautifulSoup(pagesource)
         url_lists = []
-        a_tags = bs.find_all()
+        a_tags = bs.findAll()
         for a_tag in a_tags:
             attrs = a_tag.attrs
             for attr in attrs:
@@ -23,6 +25,7 @@ def fetch_a_url(url):
                         url_path = "http:"+url_path
                     if url_path.startswith("http:"):
                         url_lists.append(url_path)
+        print(url_lists)
         return url_lists
     except Exception as e:
         print("fetch error",e)
