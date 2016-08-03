@@ -2,6 +2,7 @@
 一个python实现的开源爬虫
 
 使用方法
+
 1.首先在OpenSpider目录下，执行以下命令，以守护进程方式启动若干个worker
 
 $ celery multi start worker1 worker2 worker3 -l info -A SpiderCelery
