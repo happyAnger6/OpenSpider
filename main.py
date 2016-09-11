@@ -1,16 +1,15 @@
 __author__ = 'zhangxa'
 
+import os
+
 import tcelery
 from tornado.ioloop import IOLoop
-from tornado import gen,queues
+from tornado import gen
+import yaml
 
-import time
-import configparser
-
-from OpenSpider.SpiderCelery.celery import app
-from OpenSpider.SpiderCelery import tasks
-from OpenSpider.spiderQueue.driver import QueueDriverManage
-
+from OpenSpider.workflow.engine import WorkflowEngine
+from OpenSpider.resource.manager import ResourceManager
+from OpenSpider.concurrents.coroutine.runner import Runner
 
 tcelery.setup_nonblocking_producer()
 
@@ -19,54 +18,33 @@ concurrency = 10
 
 @gen.coroutine
 def main():
-    yield gen.sleep(3)
-    '''
-    settings = {"driver":"redis","driver_settings":{
-            "host": "localhost",
-                "port": 6379,
-                "db": 1
-        }}
-    '''
-    settings = {}
-    config = configparser.ConfigParser()
-    config.read('settings.cfg')
-    settings['driver'] = config['QUEUE_DRIVER']['driver']
+    #yield gen.sleep(3)
+    class CoruntineRunner(Runner):
+        @gen.coroutine
+        def run(self):
+            print('run begin')
+            yield gen.sleep(1)
+            print('run end!')
 
-    driver_settings = {}
-    driver_settings['host'] = config['DRIVER_SETTINGS']['host']
-    driver_settings['port'] = config['DRIVER_SETTINGS']['port']
-    driver_settings['db'] = int(config['DRIVER_SETTINGS']['db'])
-    settings['driver_settings'] = driver_settings
+    with open('./OpenSpider/main.yaml','r') as fin:
+        configs = yaml.load(fin)
 
-    manger = QueueDriverManage(**settings)
-    q = manger.get_queue_driver()
+    globals = configs['global']
+    concurrency = int(globals['concurrency'])
+    concurrent_manager = ResourceManager.getResource(globals['concurrent_manager'])
 
-    @gen.coroutine
-    def fetch_url():
-        cur_url = yield q.get()
-        try:
-            print("fetching url:%s" % cur_url)
-            urls = yield gen.Task(tasks.fetch_a_url.apply_async,args=[cur_url])
-            url_lists = urls.result
-            print("cur_url urls:",cur_url,url_lists)
-            if not url_lists:
-                return
-            for url in url_lists:
-                yield q.put(url)
-        except Exception as e:
-            print("a exception:",e)
+    engine_settings = configs['engine']
+    engine_cls = ResourceManager.getResource(engine_settings['name'])
 
-    @gen.coroutine
-    def worker():
-        while True:
-            yield fetch_url()
+    workflow_cfg_path = os.path.join('OpenSpider','cfg',engine_settings['workflow'])
+    with open(workflow_cfg_path,'r') as fin:
+        workflow_cfg = yaml.load(fin)
 
-    q.put(base_url)
+    engine = engine_cls(workflow_cfg)
+    cm = concurrent_manager(concurrency,engine)
+    cm.run()
 
-    for _ in range(concurrency):
-        worker()
-
-    yield q.join(None)
+    yield gen.sleep(10)
 
 if __name__ == "__main__":
     IOLoop.current().run_sync(main)
